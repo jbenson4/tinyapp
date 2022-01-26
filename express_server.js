@@ -14,9 +14,18 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  userRandomID: {
+    id: 'userRandomID',
+    email: 'user@example.com',
+    password: '12345'
+  }
+};
+
 const generateRandomString = function() {
   return Math.random().toString(36).slice(2, 8);
 };
+
 // Index Routes
 app.get('/', (req, res) => {
   res.send("Hello!");
@@ -28,6 +37,20 @@ app.get('/register', (req, res) => {
     username: req.body.username
   }
   res.render('register', templateVars);
+});
+
+app.post('/register', (req, res) => {
+  let userID = generateRandomString();
+  let userEmail = req.body.email;
+  let userPassword = req.body.password;
+  users[userID] = {
+    userID,
+    email: userEmail,
+    password: userPassword
+  };
+  console.log(users);
+  res.cookie('username', userID)
+  res.redirect('/urls');
 });
 
 // Login/Logout Routes
@@ -88,7 +111,11 @@ app.get('/urls/:shortURL', (req, res) => {
     longURL: urlDatabase[req.params.shortURL],
     username: req.cookies["username"],
   };
-  res.render('urls_show', templateVars);
+  if (urlDatabase[templateVars.shortURL]) {
+    res.render('urls_show', templateVars);
+  } else {
+    res.write('404 Error, Page Not Found');
+  }
 });
 
 // Redirect to the long URL Route
