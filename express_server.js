@@ -30,6 +30,19 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   res.redirect('/urls');
 })
 
+app.get('/urls/:shortURL/edit', (req, res) => {
+  let short = req.params.shortURL;
+  res.redirect(`/urls/${short}`);
+});
+
+app.post('/urls/:shortURL/edit', (req, res) => {
+  let urlToEdit = req.params.shortURL;
+  let newURL = req.body.newURL;
+  urlDatabase[urlToEdit] = newURL;
+  console.log(urlDatabase);
+  res.redirect('/urls');
+})
+
 // New URL Routes
 app.get('/urls/new', (req, res) => {
   res.render('urls_new');
