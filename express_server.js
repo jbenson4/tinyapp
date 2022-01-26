@@ -22,10 +22,16 @@ app.get('/', (req, res) => {
   res.send("Hello!");
 });
 
-// Login Route
+// Login/Logout Routes
 app.post('/login', (req, res) => {
   let username = req.body.username;
   res.cookie('username', username);
+  res.redirect('/urls');
+});
+
+app.post('/logout', (req, res) => {
+  let username = req.cookies;
+  res.clearCookie('username');
   res.redirect('/urls');
 })
 
