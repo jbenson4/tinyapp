@@ -22,6 +22,14 @@ app.get('/', (req, res) => {
   res.send("Hello!");
 });
 
+// Register Routes
+app.get('/register', (req, res) => {
+  const templateVars = {
+    username: req.body.username
+  }
+  res.render('register', templateVars);
+});
+
 // Login/Logout Routes
 app.post('/login', (req, res) => {
   let username = req.body.username;
@@ -30,14 +38,13 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-  let username = req.cookies;
+  // let username = req.cookies;
   res.clearCookie('username');
   res.redirect('/urls');
-})
+});
 
 // URLs Routes
 app.get('/urls', (req, res) => {
-  // console.log('req: ', req.headers.cookie);
   const templateVars = {
     urls: urlDatabase,
     username: req.cookies["username"]
@@ -49,7 +56,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   let urlToDelete = req.params.shortURL;
   delete urlDatabase[urlToDelete];
   res.redirect('/urls');
-})
+});
 
 app.get('/urls/:shortURL/edit', (req, res) => {
   let short = req.params.shortURL;
@@ -61,7 +68,7 @@ app.post('/urls/:shortURL/edit', (req, res) => {
   let newURL = req.body.newURL;
   urlDatabase[urlToEdit] = newURL;
   res.redirect('/urls');
-})
+});
 
 // New URL Routes
 app.get('/urls/new', (req, res) => {
@@ -90,6 +97,12 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 
+// Error Route
+app.get('/*', (req, res) => {
+  res.write('404 Error, Page Not Found');
+});
+
+// Test Routes
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
