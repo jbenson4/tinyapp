@@ -7,15 +7,11 @@ const req = require("express/lib/request");
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
-};
-
-const templateVars = {
-  // username: req.cookies["username"],
-  urls: urlDatabase,
 };
 
 const generateRandomString = function() {
@@ -35,7 +31,11 @@ app.post('/login', (req, res) => {
 
 // URLs Routes
 app.get('/urls', (req, res) => {
-  const templateVars = {urls: urlDatabase};
+  // console.log('req: ', req.headers.cookie);
+  const templateVars = {
+    urls: urlDatabase,
+    username: req.cookies["username"]
+  };
   res.render('urls_index', templateVars);
 });
 
@@ -54,7 +54,6 @@ app.post('/urls/:shortURL/edit', (req, res) => {
   let urlToEdit = req.params.shortURL;
   let newURL = req.body.newURL;
   urlDatabase[urlToEdit] = newURL;
-  console.log(urlDatabase);
   res.redirect('/urls');
 })
 
@@ -66,13 +65,16 @@ app.get('/urls/new', (req, res) => {
 app.post('/urls', (req, res) => {
   let short = generateRandomString();
   urlDatabase[short] = req.body.longURL;
-  console.log(req.body);
   res.redirect(`/urls/${short}`);
 });
 
 // Detailed URL Route
 app.get('/urls/:shortURL', (req, res) => {
-  const templateVars = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
+  const templateVars = {
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.cookies["username"],
+  };
   res.render('urls_show', templateVars);
 });
 
