@@ -11,14 +11,15 @@
       </div>
     </div>
     <div>
-      <% if (!username) { %>
+      <% if (email === undefined) { %>
         <form action='/login' method="POST">
-          <input class="form-control" type="text" name="username" placeholder="Username">
+          <input class="form-control" type="email" name="email" placeholder="Email">
+          <input class="form-control" type="password" name="password" placeholder="Password">
           <button type="submit" class="btn btn-outline-dark">Login</button>
         </form>
       <% } else { %>
         <form action='/logout' method="POST">
-          <label for="logout">Logged In As: <%= username %></label>
+          <label for="logout">Logged In As: <%= email %></label>
           <button type="submit" name="logout" class="btn btn-outline-dark">Logout</button>
         </form>
      <% }; %>

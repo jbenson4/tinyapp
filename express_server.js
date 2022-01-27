@@ -4,6 +4,7 @@ const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const req = require("express/lib/request");
+const { request } = require("express");
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
@@ -16,7 +17,7 @@ const urlDatabase = {
 
 const users = {
   userRandomID: {
-    id: 'userRandomID',
+    user_id: 'userRandomID',
     email: 'user@example.com',
     password: '12345'
   }
@@ -26,6 +27,24 @@ const generateRandomString = function() {
   return Math.random().toString(36).slice(2, 8);
 };
 
+const findUserByUserID = function(id) {
+  for (let user in users) {
+    if (users[user]['user_id'] === id) {
+      email = users[user]['email'];
+      return email;
+    }
+  }
+};
+
+const findUserIDByEmail = function(email) {
+  for (let user in users) {
+    if (users[user]['email'] === email) {
+      id = users[user]['user_id'];
+      return id;
+    }
+  }
+};
+
 // Index Routes
 app.get('/', (req, res) => {
   res.send("Hello!");
@@ -33,8 +52,11 @@ app.get('/', (req, res) => {
 
 // Register Routes
 app.get('/register', (req, res) => {
+  const cookieID = req.cookies['user_id'];
+  let email = findUserByUserID(cookieID);
   const templateVars = {
-    username: req.body.username
+    users,
+    email,
   }
   res.render('register', templateVars);
 });
@@ -44,34 +66,42 @@ app.post('/register', (req, res) => {
   let userEmail = req.body.email;
   let userPassword = req.body.password;
   users[userID] = {
-    userID,
+    user_id: userID,
     email: userEmail,
     password: userPassword
   };
   console.log(users);
-  res.cookie('username', userID)
+  res.cookie('user_id', userID)
   res.redirect('/urls');
 });
 
 // Login/Logout Routes
 app.post('/login', (req, res) => {
-  let username = req.body.username;
-  res.cookie('username', username);
+  let email = req.body.email;
+  let id = findUserIDByEmail(email);
+  console.log('id: ', id);
+  console.log('email: ', email);
+  res.cookie('user_id', id);
   res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
   // let username = req.cookies;
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect('/urls');
 });
 
 // URLs Routes
 app.get('/urls', (req, res) => {
+  const cookieID = req.cookies['user_id'];
+  let email = findUserByUserID(cookieID);
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    users,
+    email,
   };
+  console.log('templateVars: ', templateVars);
+  // console.log('email: ', email);
   res.render('urls_index', templateVars);
 });
 
@@ -106,12 +136,16 @@ app.post('/urls', (req, res) => {
 
 // Detailed URL Route
 app.get('/urls/:shortURL', (req, res) => {
+  const cookieID = req.cookies['user_id'];
+  let email = findUserByUserID(cookieID);
+  const shortURL = req.params.shortURL;
+  const longURL = urlDatabase[req.params.shortURL];
   const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"],
+    shortURL,
+    longURL,
+    email,
   };
-  if (urlDatabase[templateVars.shortURL]) {
+  if (urlDatabase[shortURL]) {
     res.render('urls_show', templateVars);
   } else {
     res.write('404 Error, Page Not Found');
@@ -125,18 +159,18 @@ app.get('/u/:shortURL', (req, res) => {
 });
 
 // Error Route
-app.get('/*', (req, res) => {
-  res.write('404 Error, Page Not Found');
+app.get('*', (req, res) => {
+  res.send('404 Error, Page Not Found');
 });
 
 // Test Routes
-app.get('/urls.json', (req, res) => {
-  res.json(urlDatabase);
-});
+// app.get('/urls.json', (req, res) => {
+//   res.json(urlDatabase);
+// });
 
-app.get('/hello', (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
+// app.get('/hello', (req, res) => {
+//   res.send("<html><body>Hello <b>World</b></body></html>\n");
+// });
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
