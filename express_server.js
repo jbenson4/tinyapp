@@ -84,6 +84,16 @@ app.post('/register', (req, res) => {
 });
 
 // Login/Logout Routes
+app.get('/login', (req, res) => {
+  const cookieID = req.cookies['user_id'];
+  let email = findUserByUserID(cookieID);
+  const templateVars = {
+    users,
+    email,
+  }
+  res.render('login', templateVars)
+})
+
 app.post('/login', (req, res) => {
   let email = req.body.email;
   let id = findUserIDByEmail(email);
