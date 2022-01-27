@@ -11,8 +11,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "userRandomID"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "userRandomID"
+  }
 };
 
 const users = {
@@ -122,6 +128,7 @@ app.get('/urls', (req, res) => {
     users,
     email,
   };
+  console.log(urlDatabase);
   res.render('urls_index', templateVars);
 });
 
@@ -139,7 +146,7 @@ app.get('/urls/:shortURL/edit', (req, res) => {
 app.post('/urls/:shortURL/edit', (req, res) => {
   let urlToEdit = req.params.shortURL;
   let newURL = req.body.newURL;
-  urlDatabase[urlToEdit] = newURL;
+  urlDatabase[urlToEdit]['longURL'] = newURL;
   res.redirect('/urls');
 });
 
@@ -161,32 +168,40 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
+  const cookieID = req.cookies['userID'];
   let short = generateRandomString();
-  urlDatabase[short] = req.body.longURL;
+  urlDatabase[short] = {
+    longURL: req.body.longURL,
+    userID: cookieID
+  };
   res.redirect(`/urls/${short}`);
 });
 
 // Detailed URL Route
 app.get('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+  if (urlDatabase[shortURL] === undefined) {
+    res.send('404 Error, Page Not Found');
+    return;
+  };
   const cookieID = req.cookies['userID'];
   let email = findUserByUserID(cookieID);
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL]['longURL'];
   const templateVars = {
     shortURL,
     longURL,
     email,
   };
-  if (urlDatabase[shortURL]) {
-    res.render('urls_show', templateVars);
-  } else {
-    res.write('404 Error, Page Not Found');
-  }
+  res.render('urls_show', templateVars);
 });
 
 // Redirect to the long URL Route
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const request = urlDatabase[req.params.shortURL];
+  if (request === undefined) {
+    res.send('404, Page Not Found');
+  }
+  const longURL = urlDatabase[req.params.shortURL]['longURL'];
   res.redirect(longURL);
 });
 
