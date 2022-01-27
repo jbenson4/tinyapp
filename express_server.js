@@ -17,7 +17,7 @@ const urlDatabase = {
 
 const users = {
   userRandomID: {
-    user_id: 'userRandomID',
+    userID: 'userRandomID',
     email: 'user@example.com',
     password: '12345'
   }
@@ -29,7 +29,7 @@ const generateRandomString = function() {
 
 const findUserByUserID = function(id) {
   for (let user in users) {
-    if (users[user]['user_id'] === id) {
+    if (users[user]['userID'] === id) {
       let email = users[user]['email'];
       return email;
     }
@@ -39,7 +39,7 @@ const findUserByUserID = function(id) {
 const findUserIDByEmail = function(email) {
   for (let user in users) {
     if (users[user]['email'] === email) {
-      let id = users[user]['user_id'];
+      let id = users[user]['userID'];
       return id;
     }
   }
@@ -52,7 +52,7 @@ app.get('/', (req, res) => {
 
 // Register Routes
 app.get('/register', (req, res) => {
-  const cookieID = req.cookies['user_id'];
+  const cookieID = req.cookies['userID'];
   let email = findUserByUserID(cookieID);
   const templateVars = {
     users,
@@ -62,7 +62,7 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-  let userID = generateRandomString();
+  let userIDString = generateRandomString();
   let userEmail = req.body.email;
   let userPassword = req.body.password;
   if (userEmail === '' || userPassword === '') {
@@ -71,19 +71,19 @@ app.post('/register', (req, res) => {
     res.send('400 Error, Email Already Exists In System');
     return;
   } else {
-    users[userID] = {
-      user_id: userID,
+    users[userIDString] = {
+      userID: userIDString,
       email: userEmail,
       password: userPassword
     };
-    res.cookie('user_id', userID);
+    res.cookie('userID', userIDString);
     res.redirect('/urls');
   }
 });
 
 // Login/Logout Routes
 app.get('/login', (req, res) => {
-  const cookieID = req.cookies['user_id'];
+  const cookieID = req.cookies['userID'];
   let email = findUserByUserID(cookieID);
   const templateVars = {
     users,
@@ -104,18 +104,18 @@ app.post('/login', (req, res) => {
     res.send('403 Error, Incorrect Password');
     return;
   }
-  res.cookie('user_id', id);
+  res.cookie('userID', id);
   res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('user_id');
+  res.clearCookie('userID');
   res.redirect('/urls');
 });
 
 // URLs Routes
 app.get('/urls', (req, res) => {
-  const cookieID = req.cookies['user_id'];
+  const cookieID = req.cookies['userID'];
   let email = findUserByUserID(cookieID);
   const templateVars = {
     urls: urlDatabase,
@@ -145,14 +145,19 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 
 // New URL Routes
 app.get('/urls/new', (req, res) => {
-  const cookieID = req.cookies['user_id'];
+  const cookieID = req.cookies['userID'];
   let email = findUserByUserID(cookieID);
   const templateVars = {
     urls: urlDatabase,
     users,
     email,
   };
-  res.render('urls_new', templateVars);
+  if (cookieID === undefined) {
+    console.log('cookieID: ', cookieID);
+    res.redirect('/login');
+  } else {
+    res.render('urls_new', templateVars);
+  }
 });
 
 app.post('/urls', (req, res) => {
@@ -163,7 +168,7 @@ app.post('/urls', (req, res) => {
 
 // Detailed URL Route
 app.get('/urls/:shortURL', (req, res) => {
-  const cookieID = req.cookies['user_id'];
+  const cookieID = req.cookies['userID'];
   let email = findUserByUserID(cookieID);
   const shortURL = req.params.shortURL;
   const longURL = urlDatabase[req.params.shortURL];
