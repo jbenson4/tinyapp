@@ -12,10 +12,11 @@
     </div>
     <div>
       <% if (email === undefined) { %>
-        <form action='/login' method="POST">
-          <input class="form-control" type="email" name="email" placeholder="Email">
-          <input class="form-control" type="password" name="password" placeholder="Password">
+        <form action='/login' method="GET">
           <button type="submit" class="btn btn-outline-dark">Login</button>
+        </form>
+        <form action='/register' method="GET">
+          <button type="submit" class="btn btn-outline-dark">Register</button>
         </form>
       <% } else { %>
         <form action='/logout' method="POST">
