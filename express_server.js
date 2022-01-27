@@ -3,13 +3,17 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const req = require("express/lib/request");
 const { request } = require("express");
 const bcrypt = require('bcryptjs');
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['secret_key_1', 'secret_key_2']
+}));
 
 const urlDatabase = {
   "b2xVn2": {
@@ -68,7 +72,7 @@ app.get('/', (req, res) => {
 
 // Register Routes
 app.get('/register', (req, res) => {
-  const cookieID = req.cookies['userID'];
+  const cookieID = req.session.userID;
   let email = findUserByUserID(cookieID);
   const templateVars = {
     users,
@@ -94,14 +98,16 @@ app.post('/register', (req, res) => {
       password: hashedPassword
     };
     console.log(users);
-    res.cookie('userID', userIDString);
+    // res.cookie('userID', userIDString);
+    req.session.userID = userIDString;
     res.redirect('/urls');
   }
 });
 
 // Login/Logout Routes
 app.get('/login', (req, res) => {
-  const cookieID = req.cookies['userID'];
+  const cookieID = req.session.userID;
+  
   let email = findUserByUserID(cookieID);
   const templateVars = {
     users,
@@ -123,18 +129,20 @@ app.post('/login', (req, res) => {
     return;
   }
   console.log(users);
-  res.cookie('userID', id);
+  // res.cookie('userID', id);
+  console.log('session.userID: ', req.session.userID);
+  req.session.userID = id;
   res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('userID');
+  req.session = null;
   res.redirect('/urls');
 });
 
 // URLs Routes
 app.get('/urls', (req, res) => {
-  const cookieID = req.cookies['userID'];
+  const cookieID = req.session.userID;
   let email = findUserByUserID(cookieID);
   const urls = urlsForUser(cookieID);
   const templateVars = {
@@ -147,7 +155,7 @@ app.get('/urls', (req, res) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const cookieID = req.cookies['userID'];
+  const cookieID = req.session.userID;
   const urlToDelete = req.params.shortURL;
   const editableURLs = urlsForUser(cookieID);
   const has = Object.prototype.hasOwnProperty;
@@ -165,7 +173,7 @@ app.get('/urls/:shortURL/edit', (req, res) => {
 });
 
 app.post('/urls/:shortURL/edit', (req, res) => {
-  const cookieID = req.cookies['userID'];
+  const cookieID = req.session.userID;
   const urlToEdit = req.params.shortURL;
   const newURL = req.body.newURL;
   const editableURLs = urlsForUser(cookieID);
@@ -180,7 +188,7 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 
 // New URL Routes
 app.get('/urls/new', (req, res) => {
-  const cookieID = req.cookies['userID'];
+  const cookieID = req.session.userID;
   let email = findUserByUserID(cookieID);
   const templateVars = {
     urls: urlDatabase,
@@ -195,7 +203,7 @@ app.get('/urls/new', (req, res) => {
 });
 
 app.post('/urls', (req, res) => {
-  const cookieID = req.cookies['userID'];
+  const cookieID = req.session.userID;
   let short = generateRandomString();
   urlDatabase[short] = {
     longURL: req.body.longURL,
@@ -211,7 +219,7 @@ app.get('/urls/:shortURL', (req, res) => {
     res.status(404).send('404 Error, Page Not Found');
     return;
   }
-  const cookieID = req.cookies['userID'];
+  const cookieID = req.session.userID;
   const email = findUserByUserID(cookieID);
   const longURL = urlDatabase[req.params.shortURL]['longURL'];
   const urls = urlsForUser(cookieID);
