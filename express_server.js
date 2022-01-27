@@ -72,9 +72,9 @@ app.post('/register', (req, res) => {
   let userEmail = req.body.email;
   let userPassword = req.body.password;
   if (userEmail === '' || userPassword === '') {
-    res.send('400 Error, Improper Email or Password');
+    res.status(400).send('400 Error, Improper Email or Password');
   } else if (users[findUserIDByEmail(userEmail)] !== undefined) {
-    res.send('400 Error, Email Already Exists In System');
+    res.status(400).send('400 Error, Email Already Exists In System');
     return;
   } else {
     users[userIDString] = {
@@ -103,11 +103,11 @@ app.post('/login', (req, res) => {
   let password = req.body.password;
   let id = findUserIDByEmail(email);
   if (id === undefined) {
-    res.send('403 Error, User Not Found');
+    res.status(403).send('403 Error, User Not Found');
     return;
   }
   if (users[id]['password'] !== password) {
-    res.send('403 Error, Incorrect Password');
+    res.status(403).send('403 Error, Incorrect Password');
     return;
   }
   res.cookie('userID', id);
@@ -129,7 +129,6 @@ app.get('/urls', (req, res) => {
     email,
     cookieID,
   };
-  console.log(urlDatabase);
   res.render('urls_index', templateVars);
 });
 
@@ -161,7 +160,6 @@ app.get('/urls/new', (req, res) => {
     email,
   };
   if (cookieID === undefined) {
-    console.log('cookieID: ', cookieID);
     res.redirect('/login');
   } else {
     res.render('urls_new', templateVars);
@@ -182,7 +180,7 @@ app.post('/urls', (req, res) => {
 app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   if (urlDatabase[shortURL] === undefined) {
-    res.send('404 Error, Page Not Found');
+    res.status(404).send('404 Error, Page Not Found');
     return;
   };
   const cookieID = req.cookies['userID'];
@@ -200,7 +198,7 @@ app.get('/urls/:shortURL', (req, res) => {
 app.get('/u/:shortURL', (req, res) => {
   const request = urlDatabase[req.params.shortURL];
   if (request === undefined) {
-    res.send('404, Page Not Found');
+    res.status(404).send('404, Page Not Found');
   }
   const longURL = urlDatabase[req.params.shortURL]['longURL'];
   res.redirect(longURL);
@@ -208,7 +206,7 @@ app.get('/u/:shortURL', (req, res) => {
 
 // Error Route
 app.get('*', (req, res) => {
-  res.send('404 Error, Page Not Found');
+  res.status(404).send('404 Error, Page Not Found');
 });
 
 // Test Routes
