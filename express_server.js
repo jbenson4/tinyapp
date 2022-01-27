@@ -127,6 +127,7 @@ app.get('/urls', (req, res) => {
     urls: urlDatabase,
     users,
     email,
+    cookieID,
   };
   console.log(urlDatabase);
   res.render('urls_index', templateVars);
