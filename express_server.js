@@ -51,6 +51,17 @@ const findUserIDByEmail = function(email) {
   }
 };
 
+const urlsForUser = function(id) {
+  const userURLs = {};
+  for (let url in urlDatabase) {
+    if (urlDatabase[url]['userID'] === id) {
+      userURLs[url] = urlDatabase[url];
+    }
+  } return userURLs;
+};
+
+console.log('userURLs: ', urlsForUser('userRandomID'));
+
 // Index Routes
 app.get('/', (req, res) => {
   res.send("Hello!");
@@ -123,8 +134,9 @@ app.post('/logout', (req, res) => {
 app.get('/urls', (req, res) => {
   const cookieID = req.cookies['userID'];
   let email = findUserByUserID(cookieID);
+  const urls = urlsForUser(cookieID);
   const templateVars = {
-    urls: urlDatabase,
+    urls,
     users,
     email,
     cookieID,
