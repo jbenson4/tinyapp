@@ -30,7 +30,7 @@ const generateRandomString = function() {
 const findUserByUserID = function(id) {
   for (let user in users) {
     if (users[user]['user_id'] === id) {
-      email = users[user]['email'];
+      let email = users[user]['email'];
       return email;
     }
   }
@@ -39,7 +39,7 @@ const findUserByUserID = function(id) {
 const findUserIDByEmail = function(email) {
   for (let user in users) {
     if (users[user]['email'] === email) {
-      id = users[user]['user_id'];
+      let id = users[user]['user_id'];
       return id;
     }
   }
@@ -65,28 +65,37 @@ app.post('/register', (req, res) => {
   let userID = generateRandomString();
   let userEmail = req.body.email;
   let userPassword = req.body.password;
-  users[userID] = {
-    user_id: userID,
-    email: userEmail,
-    password: userPassword
-  };
-  console.log(users);
-  res.cookie('user_id', userID)
-  res.redirect('/urls');
+  console.log('email: ', userEmail);
+  console.log('findUser: ', findUserIDByEmail(userEmail));
+  if (userEmail === '' || userPassword === '') {
+    res.send('400 Error, Improper Email or Password');
+  } else if (findUserIDByEmail(userEmail)) {
+    res.send('400 Error, Email Already Exists In System');
+  } else {
+    users[userID] = {
+      user_id: userID,
+      email: userEmail,
+      password: userPassword
+    };
+    res.cookie('user_id', userID)
+    res.redirect('/urls');
+  }
+  console.log('users: ', users);
 });
 
 // Login/Logout Routes
 app.post('/login', (req, res) => {
   let email = req.body.email;
   let id = findUserIDByEmail(email);
-  console.log('id: ', id);
-  console.log('email: ', email);
-  res.cookie('user_id', id);
-  res.redirect('/urls');
+  if (id !== undefined) {
+    res.cookie('user_id', id);
+    res.redirect('/urls');
+  } else {
+    res.send('User Does Not Exist');
+  }
 });
 
 app.post('/logout', (req, res) => {
-  // let username = req.cookies;
   res.clearCookie('user_id');
   res.redirect('/urls');
 });
@@ -100,8 +109,6 @@ app.get('/urls', (req, res) => {
     users,
     email,
   };
-  console.log('templateVars: ', templateVars);
-  // console.log('email: ', email);
   res.render('urls_index', templateVars);
 });
 
