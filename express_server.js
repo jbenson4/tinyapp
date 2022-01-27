@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const req = require("express/lib/request");
 const { request } = require("express");
+const bcrypt = require('bcryptjs');
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
@@ -80,6 +81,7 @@ app.post('/register', (req, res) => {
   let userIDString = generateRandomString();
   let userEmail = req.body.email;
   let userPassword = req.body.password;
+  const hashedPassword = bcrypt.hashSync(userPassword, 10);
   if (userEmail === '' || userPassword === '') {
     res.status(400).send('400 Error, Improper Email or Password');
   } else if (users[findUserIDByEmail(userEmail)] !== undefined) {
@@ -89,8 +91,9 @@ app.post('/register', (req, res) => {
     users[userIDString] = {
       userID: userIDString,
       email: userEmail,
-      password: userPassword
+      password: hashedPassword
     };
+    console.log(users);
     res.cookie('userID', userIDString);
     res.redirect('/urls');
   }
@@ -115,10 +118,11 @@ app.post('/login', (req, res) => {
     res.status(403).send('403 Error, User Not Found');
     return;
   }
-  if (users[id]['password'] !== password) {
+  if (!bcrypt.compareSync(password, users[id]['password'])) {
     res.status(403).send('403 Error, Incorrect Password');
     return;
   }
+  console.log(users);
   res.cookie('userID', id);
   res.redirect('/urls');
 });
