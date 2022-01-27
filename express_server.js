@@ -57,7 +57,7 @@ app.get('/register', (req, res) => {
   const templateVars = {
     users,
     email,
-  }
+  };
   res.render('register', templateVars);
 });
 
@@ -65,22 +65,20 @@ app.post('/register', (req, res) => {
   let userID = generateRandomString();
   let userEmail = req.body.email;
   let userPassword = req.body.password;
-  console.log('email: ', userEmail);
-  console.log('findUser: ', findUserIDByEmail(userEmail));
   if (userEmail === '' || userPassword === '') {
     res.send('400 Error, Improper Email or Password');
-  } else if (findUserIDByEmail(userEmail)) {
+  } else if (users[findUserIDByEmail(userEmail)] !== undefined) {
     res.send('400 Error, Email Already Exists In System');
+    return;
   } else {
     users[userID] = {
       user_id: userID,
       email: userEmail,
       password: userPassword
     };
-    res.cookie('user_id', userID)
+    res.cookie('user_id', userID);
     res.redirect('/urls');
   }
-  console.log('users: ', users);
 });
 
 // Login/Logout Routes
@@ -90,19 +88,24 @@ app.get('/login', (req, res) => {
   const templateVars = {
     users,
     email,
-  }
-  res.render('login', templateVars)
-})
+  };
+  res.render('login', templateVars);
+});
 
 app.post('/login', (req, res) => {
   let email = req.body.email;
+  let password = req.body.password;
   let id = findUserIDByEmail(email);
-  if (id !== undefined) {
-    res.cookie('user_id', id);
-    res.redirect('/urls');
-  } else {
-    res.send('User Does Not Exist');
+  if (id === undefined) {
+    res.send('403 Error, User Not Found');
+    return;
   }
+  if (users[id]['password'] !== password) {
+    res.send('403 Error, Incorrect Password');
+    return;
+  }
+  res.cookie('user_id', id);
+  res.redirect('/urls');
 });
 
 app.post('/logout', (req, res) => {
@@ -142,7 +145,14 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 
 // New URL Routes
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new');
+  const cookieID = req.cookies['user_id'];
+  let email = findUserByUserID(cookieID);
+  const templateVars = {
+    urls: urlDatabase,
+    users,
+    email,
+  };
+  res.render('urls_new', templateVars);
 });
 
 app.post('/urls', (req, res) => {
