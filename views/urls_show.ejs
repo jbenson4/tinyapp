@@ -15,6 +15,9 @@
     <div class="card-body">
       <h5 class="card-title">TinyURL for: <%= longURL %></h5>
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+      <% if (!urls.hasOwnProperty(shortURL)) { %>
+        <p class="card-text">This Tiny URL Does Not Belong To You</p>
+      <% }; %>
     </div>
   </div>
   <div class="card text-center">

@@ -196,12 +196,15 @@ app.get('/urls/:shortURL', (req, res) => {
     return;
   };
   const cookieID = req.cookies['userID'];
-  let email = findUserByUserID(cookieID);
+  const email = findUserByUserID(cookieID);
   const longURL = urlDatabase[req.params.shortURL]['longURL'];
+  const urls = urlsForUser(cookieID);
   const templateVars = {
     shortURL,
     longURL,
     email,
+    cookieID,
+    urls,
   };
   res.render('urls_show', templateVars);
 });
