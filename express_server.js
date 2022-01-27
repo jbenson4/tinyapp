@@ -60,8 +60,6 @@ const urlsForUser = function(id) {
   } return userURLs;
 };
 
-console.log('userURLs: ', urlsForUser('userRandomID'));
-
 // Index Routes
 app.get('/', (req, res) => {
   res.send("Hello!");
@@ -145,7 +143,14 @@ app.get('/urls', (req, res) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  let urlToDelete = req.params.shortURL;
+  const cookieID = req.cookies['userID'];
+  const urlToDelete = req.params.shortURL;
+  const editableURLs = urlsForUser(cookieID);
+  const has = Object.prototype.hasOwnProperty;
+  if (!has.call(editableURLs, urlToDelete)) {
+    res.status(403).send('403 Error');
+    return;
+  }
   delete urlDatabase[urlToDelete];
   res.redirect('/urls');
 });
@@ -156,8 +161,15 @@ app.get('/urls/:shortURL/edit', (req, res) => {
 });
 
 app.post('/urls/:shortURL/edit', (req, res) => {
-  let urlToEdit = req.params.shortURL;
-  let newURL = req.body.newURL;
+  const cookieID = req.cookies['userID'];
+  const urlToEdit = req.params.shortURL;
+  const newURL = req.body.newURL;
+  const editableURLs = urlsForUser(cookieID);
+  const has = Object.prototype.hasOwnProperty;
+  if (!has.call(editableURLs, urlToEdit)) {
+    res.status(403).send('403 Error');
+    return;
+  }
   urlDatabase[urlToEdit]['longURL'] = newURL;
   res.redirect('/urls');
 });
@@ -194,7 +206,7 @@ app.get('/urls/:shortURL', (req, res) => {
   if (urlDatabase[shortURL] === undefined) {
     res.status(404).send('404 Error, Page Not Found');
     return;
-  };
+  }
   const cookieID = req.cookies['userID'];
   const email = findUserByUserID(cookieID);
   const longURL = urlDatabase[req.params.shortURL]['longURL'];
