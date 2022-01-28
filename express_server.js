@@ -15,28 +15,9 @@ app.use(cookieSession({
   keys: ['secret_key_1', 'secret_key_2']
 }));
 
-const urlDatabase = {
-  // Placeholder Test URLs
- 
-  // "b2xVn2": {
-  //   longURL: "http://www.lighthouselabs.ca",
-  //   userID: "userRandomID"
-  // },
-  // "9sm5xK": {
-  //   longURL: "http://www.google.com",
-  //   userID: "userRandomID"
-  // }
-};
+const urlDatabase = {};
 
-const users = {
-  // Placeholder Test User
-
-  // userRandomID: {
-  //   userID: 'userRandomID',
-  //   email: 'user@example.com',
-  //   password: '12345'
-  // }
-};
+const users = {};
 
 const { authenticateUser, addUser, findUserIDByEmail, urlsForUser, generateRandomString } = generateUserHelper(users, urlDatabase, bcrypt);
 
