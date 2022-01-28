@@ -57,4 +57,16 @@ const generateUserHelper = (users, urls, bcrypt) => {
   return { authenticateUser, addUser, findUserIDByEmail, urlsForUser, generateRandomString};
 };
 
-module.exports = generateUserHelper;
+const getUserByEmail = function(email, database) {
+  for (let user in database) {
+    if (database[user]['email'] === email) {
+      let id = database[user]['id'];
+      return id;
+    }
+  } return undefined;
+};
+
+module.exports = { 
+  generateUserHelper,
+  getUserByEmail,
+};

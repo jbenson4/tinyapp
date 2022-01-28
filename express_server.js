@@ -6,7 +6,7 @@ const cookieSession = require('cookie-session');
 const req = require("express/lib/request");
 const { request } = require("express");
 const bcrypt = require('bcryptjs');
-const generateUserHelper = require('./helpers');
+const { generateUserHelper } = require('./helpers');
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
