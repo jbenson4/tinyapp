@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs');
 const { generateUserHelper } = require('./helpers');
+const users = require('./user_database');
+const urlDatabase = require('./url_database');
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
@@ -13,11 +15,7 @@ app.use(cookieSession({
   keys: ['secret_key_1', 'secret_key_2']  // Configurable keys for creating secure session cookies
 }));
 
-const urlDatabase = {};
-
-const users = {};
-
-const { authenticateUser, addUser, findUserIDByEmail, urlsForUser, generateRandomString } = generateUserHelper(users, urlDatabase, bcrypt);
+const { authenticateUser, addUser, findUserIDByEmail, urlsForUser, generateRandomString } = generateUserHelper(bcrypt);
 
 // Index Route
 app.get('/', (req, res) => {
@@ -67,13 +65,12 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
-  let id = findUserIDByEmail(email);
+  const id = findUserIDByEmail(email);
   const data = authenticateUser(password, id);  // Confirm user exists in database
   if (data.error === null) {  // If user authentication succeeds, create a session cookie and redirect to /urls. Otherwise, return error
     req.session.userID = email;
     res.redirect('/urls');
   } else {
-    console.log(data.error);
     res.status(400).send('400 Error');
   }
 });
@@ -97,7 +94,7 @@ app.get('/urls', (req, res) => {
 });
 
 app.get('/urls/:shortURL/edit', (req, res) => {
-  let short = req.params.shortURL;
+  const short = req.params.shortURL;
   res.redirect(`/urls/${short}`);
 });
 
@@ -186,6 +183,9 @@ app.get('/urls/:shortURL', (req, res) => {
 
 // Redirect to the long URL Route
 app.get('/u/:shortURL', (req, res) => {
+  console.log('req params: ', req.params);
+  console.log('req: ', req);
+  console.log('urls: ', urlDatabase);
   const request = urlDatabase[req.params.shortURL];
   if (request === undefined) {  // If URL does not exist in URL database, return an error. Otherwise, redirect to the requested webpage
     res.status(404).send('404, Page Not Found');
