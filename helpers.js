@@ -1,6 +1,10 @@
-const generateUserHelper = (users, urls, bcrypt) => {
-  const generateRandomString = function() {
-    return Math.random().toString(36).slice(2, 8);
+const users = require('./user_database');
+const urlDatabase = require('./url_database');
+
+const generateUserHelper = (bcrypt) => {
+  const generateRandomString = function(length = 6) {
+    const lengthOfString = length + 2
+    return Math.random().toString(36).slice(2, lengthOfString);
   };
   
   const authenticateUser = (password, id) => {
@@ -38,7 +42,7 @@ const generateUserHelper = (users, urls, bcrypt) => {
   };
   
   const findUserIDByEmail = (email) => {
-    for (let user in users) {
+    for (const user in users) {
       if (users[user]['email'] === email) {
         let id = users[user]['userID'];
         return id;
@@ -48,9 +52,9 @@ const generateUserHelper = (users, urls, bcrypt) => {
   
   const urlsForUser = (id) => {
     const userURLs = {};
-    for (let url in urls) {
-      if (urls[url]['userID'] === id) {
-        userURLs[url] = urls[url];
+    for (const url in urlDatabase) {
+      if (urlDatabase[url]['userID'] === id) {
+        userURLs[url] = urlDatabase[url];
       }
     } return userURLs;
   };
@@ -58,7 +62,7 @@ const generateUserHelper = (users, urls, bcrypt) => {
 };
 
 const getUserByEmail = function(email, database) {
-  for (let user in database) {
+  for (const user in database) {
     if (database[user]['email'] === email) {
       let id = database[user]['id'];
       return id;
