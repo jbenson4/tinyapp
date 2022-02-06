@@ -25,7 +25,7 @@ const generateUserHelper = (users, urls, bcrypt) => {
       error = true;
       console.log('Error: Email Already Exists In System');
     }
-    if (error === false) {
+    if (!error) {
       const newUser = {
         userID: userIDString,
         email,
@@ -63,7 +63,7 @@ const getUserByEmail = function(email, database) {
       let id = database[user]['id'];
       return id;
     }
-  } return undefined;
+  }
 };
 
 module.exports = { 
